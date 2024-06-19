@@ -1,3 +1,4 @@
+set windows-shell := ["pwsh", "-NoLogo", "-NoProfileLoadTime", "-Command"]
 lib_name := "napi_sandbox"
 
 profile := env_var_or_default("profile", "debug")
@@ -11,7 +12,7 @@ else \
 
 dylib := \
 if \
-  os() == "Windows_NT" { lib_name + ".dll" } \
+  os() == "windows" { lib_name + ".dll" } \
 else if \
   os() == "macos" { "lib" + lib_name + ".dylib" } \
 else if \
