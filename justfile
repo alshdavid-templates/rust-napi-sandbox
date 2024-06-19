@@ -31,3 +31,7 @@ build:
 run:
     just build
     node {{root_dir}}/cmd/index.js
+
+fmt:
+  cargo +nightly fmt
+  
