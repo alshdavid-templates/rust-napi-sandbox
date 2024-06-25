@@ -1,5 +1,5 @@
 {
-  "rust-analyzer.cargo.features": ["nodejs"],
+  "rust-analyzer.cargo.features": [],
   "rust-analyzer.procMacro.ignored": { "napi-derive": ["napi"] },
   "rust-analyzer.rustfmt.overrideCommand": ["rustfmt", "+nightly"],
   "[rust]": {
