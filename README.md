@@ -1,4 +1,4 @@
-# Minimal Napi-rs Starter Project
+# Minimal `napi-rs` Starter Project 🦀
 
 This is a minimal starter project for napi-rs that uses the absolute minimum tools possible. 
 
