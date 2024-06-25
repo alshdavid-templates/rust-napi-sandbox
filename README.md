@@ -6,6 +6,8 @@ It does not use the napi-rs build tooling to rename/move the Rust build artifact
 
 This template is for people who want to know what's happening behind the scenes, prefer an explicit build flow or otherwise appreciate fewer dependencies in their project.
 
+_Note: It does not generate TypeScript types because `napi-rs` does not have a command to generate types without running the entire build_
+
 ## Dependencies
 
 You need:
