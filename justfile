@@ -24,6 +24,7 @@ root_dir :=  justfile_directory()
 out_dir :=  join(justfile_directory(), "target", profile)
 
 build:
+    @test -d node_modules || npm install
     cargo build {{profile_cargo}}
     rm -rf {{root_dir}}/napi_sandbox/index.node
     mv {{out_dir}}/{{dylib}} {{root_dir}}/napi_sandbox/index.node
