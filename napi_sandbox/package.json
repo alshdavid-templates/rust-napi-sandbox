@@ -2,5 +2,8 @@
   "name": "@workspace/napi_sandbox",
   "version": "1.0.0",
   "type": "commonjs",
-  "main": "nodejs/index.cjs"
+  "main": "index.cjs",
+  "dependencies": {
+    "@napi-rs/cli": "*"
+  }
 }
