@@ -9,6 +9,10 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { version = "2.*", default-features = false, features = ["napi8", "tokio_rt", "serde-json", "async"] }
 napi-derive = "2.*"
+anyhow = "*"
+parking_lot = "*"
+once_cell = "*"
+serde = "*"
 
 [build-dependencies]
 napi-build = "2.*"
