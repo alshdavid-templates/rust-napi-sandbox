@@ -11,6 +11,8 @@ use napi::Env;
 use napi::JsFunction;
 use napi::JsObject;
 use napi::JsUnknown;
+use napi::NapiRaw;
+use napi::NapiValue;
 use napi_derive::napi;
 use serde::Serialize;
 
@@ -18,10 +20,22 @@ use serde::Serialize;
 pub fn main(env: Env) -> napi::Result<JsObject> {
   let (resolver, promise) = JsResolvable::new(&env)?;
 
+  // resolver.resolve_value(env.create_int32(422)?);
+  // resolver.reject_value(env.create_error(napi::Error::from_reason("Hi"))?);
+
+  // resolver.resolve(|env| env.create_int32(42));
+
+  // thread::spawn(move || {
+  //   thread::sleep(Duration::from_millis(1000));
+
+  //   resolver.reject_serde(input);
+  //   // resolver.resolve(|env| env.create_int32(42));
+  //   // resolver.reject_serde(50);
+  // });
+
   thread::spawn(move || {
     thread::sleep(Duration::from_millis(1000));
-    resolver.resolve(|env| Ok(env.create_int32(42)?.into_unknown()));
-    // resolver.reject_serde(50);
+    resolver.reject(|env| env.create_error(napi::Error::from_reason("Hi")));
   });
 
   Ok(promise)
@@ -93,22 +107,24 @@ impl JsResolvable {
     ))
   }
 
-  pub fn resolve(
+  pub fn resolve<F, N>(
     &self,
-    mapper: impl FnOnce(Env) -> napi::Result<JsUnknown> + 'static,
-  ) {
-    self
-      .then_fn
-      .call(Box::new(mapper), ThreadsafeFunctionCallMode::NonBlocking);
+    mapper: F,
+  ) where
+    N: NapiRaw,
+    F: FnOnce(Env) -> napi::Result<N> + 'static,
+  {
+    self.then_fn.call(
+      JsResolvable::map_params(mapper),
+      ThreadsafeFunctionCallMode::NonBlocking,
+    );
   }
 
-  pub fn reject(
+  pub fn resolve_value(
     &self,
-    mapper: impl FnOnce(Env) -> napi::Result<JsUnknown> + 'static,
+    value: impl NapiRaw + 'static,
   ) {
-    self
-      .catch_fn
-      .call(Box::new(mapper), ThreadsafeFunctionCallMode::NonBlocking);
+    self.resolve(move |_env| Ok(value))
   }
 
   pub fn resolve_serde<Param: Serialize + 'static>(
@@ -118,10 +134,42 @@ impl JsResolvable {
     self.resolve(move |env| env.to_js_value(&input))
   }
 
+  pub fn reject<F, N>(
+    &self,
+    mapper: F,
+  ) where
+    N: NapiRaw,
+    F: FnOnce(Env) -> napi::Result<N> + 'static,
+  {
+    self.catch_fn.call(
+      JsResolvable::map_params(mapper),
+      ThreadsafeFunctionCallMode::NonBlocking,
+    );
+  }
+
+  pub fn reject_value(
+    &self,
+    value: impl NapiRaw + 'static,
+  ) {
+    self.reject(move |_env| Ok(value))
+  }
+
   pub fn reject_serde<Param: Serialize + 'static>(
     &self,
     input: Param,
   ) {
     self.reject(move |env| env.to_js_value(&input))
+  }
+
+  fn map_params<F, N>(input: F) -> Box<dyn FnOnce(Env) -> napi::Result<JsUnknown>>
+  where
+    N: NapiRaw,
+    F: FnOnce(Env) -> napi::Result<N> + 'static,
+  {
+    Box::new(move |env| -> napi::Result<JsUnknown> {
+      let value = input(env)?;
+      let value = unsafe { JsUnknown::from_raw(env.raw(), value.raw()) }?;
+      Ok(value)
+    })
   }
 }
